@@ -83,8 +83,3 @@ body {
   text-indent: -9999px;
   /* remove or comment out text indent if all images are available */
 }
-
-#button-addon2 {
-  background-color: blue;
-  border: none;
-}

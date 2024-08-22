@@ -18,7 +18,7 @@
             data-bs-autohide="true" data-bs-delay="4000">
             <div class="d-flex">
                 <div id="msg-toast-body" class="toast-body">
-                    testing message
+            
                 </div>
                 <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
@@ -42,13 +42,13 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Home</a>
+                            <a class="nav-link" aria-current="page" href="./index.html">Home</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">About</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Contact</a>
+                            <a class="nav-link active" href="#">Contact</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Sign-in/Login</a>
@@ -72,7 +72,7 @@
             <!-- Email input -->
             <div class="mb-4">
                 <label class="form-label text-white" for="txtemail">Email address</label>
-                <input type="email" id="txtemail" class="form-control" required/>
+                <input type="email" id="txtemail" class="form-control" required />
                 <div class="invalid-feedback">Please enter a valid email.</div>
             </div>
 
@@ -108,28 +108,80 @@
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
 
+    <!-- External Custom script -->
+    <script src="script/script.js"></script>
+    <script src="script/bs-validate.js"></script>
+
+    <!-- Internal script -->
     <script>
         // Custom JS script and function
 
-        function submitForm() {
-            event.preventDefault();
-            console.log("form submitted");
+        async function submitForm() {
+            event.preventDefault(); /* Prevent default browser events from happening */
+
 
             const email = document.getElementById('txtemail');
             const msg = document.getElementById('txtmessage');
 
             const toastElement = document.getElementById('msg-toast')
             const toastBodyElement = document.getElementById('msg-toast-body')
-            console.log(email.value);
-            console.log(msg.value)
+            // console.log(email.value);
+            // console.log(msg.value)
 
-            // Trap unsuccessful event 1: txtEmail not provided
+            // Trap unsuccessful event 1: input fields empty
             if (email.value === "" || msg.value === "") {
                 showToast({ toastElement, toastBodyElement, bgColor: "danger", msg: "All input must not be empty" });
                 return;
             }
 
-            showToast({ toastElement, toastBodyElement, bgColor: "success", msg: "Message submitted. Thank you" })
+            // Trap unsucessful event 2: invalid email
+            const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+            if (!emailRegex.test(email.value)) {
+                showToast({ toastElement, toastBodyElement, bgColor: "danger", msg: "invalid email" });
+                return;
+            }
+
+            const msgRegex = /^[a-zA-Z0-9\s.,!?'"-']*$/;
+            if (!msgRegex.test(msg.value)) {
+                showToast({ toastElement, toastBodyElement, bgColor: "danger", msg: "Message is incorrectly written" });
+                return;
+            }
+            const formData = { email: email.value, message: msg.value }
+            try {
+                // Perform a POST fetch request to process our form data
+                const response = await fetch("https://getform.io/f/bpjmyneb", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData)
+                });
+
+                // Mock responses
+                // const response = mockSuccessResponse;
+                // const response = mockNotFoundResponse;
+
+                if (response.ok) {
+                    // Show toast for successful submission
+                    showToast({ toastElement, toastBodyElement, bgColor: "success", msg: "Message submitted. Thank you. Redirecting to homepage.." })
+                    const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
+                    await sleep(4000)
+
+                    var url = "/index.html";
+                    window.location = url;
+                } else {
+                    // Show toast for unsuccessful submission
+                    showToast({ toastElement, toastBodyElement, bgColor: "danger", msg: "Something went wrong. Please try again" })
+                }
+
+            } catch (error) {
+                console.log(error.message);
+                // show toast for all other errors
+                showToast({ toastElement, toastBodyElement, bgColor: "danger", msg: "Error submitting message. Please try again later." })
+            }
+
+
+
+
+
         }
         function showToast({ toastElement, toastBodyElement, bgColor, msg }) {
             // Run BootStrap5's toast to show the activity is complete.
@@ -144,26 +196,7 @@
             toast.show();
         }
 
-        // form validation
-        (() => {
-        'use strict'
-
-        // Fetch all the forms we want to apply custom Bootstrap validation styles to
-        const forms = document.querySelectorAll('.needs-validation')
-
-        // Loop over them and prevent submission
-        Array.from(forms).forEach(form => {
-            form.addEventListener('submit', event => {
-                if (!form.checkValidity()) {
-                    event.preventDefault()
-                    event.stopPropagation()
-                }
-
-                form.classList.add('was-validated')
-            }, false)
-        })
-    })();
-
+ 
     </script>
 
 
